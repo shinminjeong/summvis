@@ -43,7 +43,7 @@ def plot(request):
     return render(request, "plot.html", {
         "input_data": data,
         "ent_label": label,
-        "flag_edge": edge,
+        "flag_edge": edge if edge else "false",
     })
 
 @csrf_exempt

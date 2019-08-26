@@ -27,6 +27,7 @@ def plot(request):
     input_file_1 = request.GET.get("input1")
     input_file_2 = request.GET.get("input2")
     tsne_p = int(request.GET.get("p"))
+    edge = request.GET.get("edge")
     verbose = request.GET.get("verbose")
     grid_test = request.GET.get("grid_test")
     contour = request.GET.get("contour")
@@ -36,12 +37,13 @@ def plot(request):
     # print(data)
 
     data, label, senmap = generate_plots(input_file_1, input_file_2, data, summ, tsne_p)
-    # print(senmap)
+    # print(label)
     # data = json.loads(open(data_path).read())
 
     return render(request, "plot.html", {
         "input_data": data,
         "ent_label": label,
+        "flag_edge": edge,
     })
 
 @csrf_exempt

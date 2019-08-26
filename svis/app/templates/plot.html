@@ -26,6 +26,8 @@ var hover_switch = document.getElementById("hover_switch_ckb");
 var verbose_text = document.getElementById("verbose_div");
 var data = {{ input_data|safe }};
 var elabel = {{ ent_label|safe }};
+var draw_edges = {{ flag_edge }};
+console.log("draw_edges", draw_edges);
 drawCloud(data);
 enableRectDraw();
 

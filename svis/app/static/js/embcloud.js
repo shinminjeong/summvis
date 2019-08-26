@@ -54,6 +54,37 @@ function drawCloud( data ) {
   var xs = (width-legend_margin)/xd, ys = height/yd;
   // console.log("original", xd, yd, xs, ys);
   // draw circle for each point
+  if (draw_edges) {
+    for (var key1 in data) {
+      var name1 = key1.split("_");
+      var gname1 = name1[0]+"_"+name1[1];
+      var newx1 = (data[key1][0]-bbox[4])*xs+(width-legend_margin)/2,
+          newy1 = (data[key1][1]-bbox[5])*ys+height/2;
+      for (var key2 in data) {
+        var name2 = key2.split("_");
+        var gname2 = name2[0]+"_"+name2[1];
+        var newx2 = (data[key2][0]-bbox[4])*xs+(width-legend_margin)/2,
+            newy2 = (data[key2][1]-bbox[5])*ys+height/2;
+
+        var label1 = [], label2 = [];
+        for (var v in elabel[key1]) { label1.push(elabel[key1][v][0]) }
+        for (var v in elabel[key2]) { label2.push(elabel[key2][v][0]) }
+        // console.log(label1, label2)
+        var intersection = label1.filter(value => label2.includes(value))
+        if (intersection.length > 0) {
+          // console.log(newx1, newy1, newx2, newy2);
+          var line = draw_edge.line().id(key1+"_"+key2)
+              .attr("x1", newx1).attr("y1", newy1)
+              .attr("x2", newx2).attr("y2", newy2)
+              .attr("stroke", "gray")
+              .attr("visibility", "hidden");
+          every_edges[gname1].push(line)
+          every_edges[gname2].push(line)
+        }
+      }
+    }
+  }
+
   for (var key in data) {
     var name = key.split("_");
     var gname = name[0]+"_"+name[1];
@@ -75,7 +106,8 @@ function drawCloud( data ) {
     var gname = name[0]+"_"+name[1];
     var newx = (data[key][0]-bbox[4])*xs+(width-legend_margin)/2,
         newy = (data[key][1]-bbox[5])*ys+height/2;
-    var label = String(elabel[key]);
+    // console.log(key, elabel[key])
+    var label = String(elabel[key].slice(5));
     var c_text = draw_text.text(label).id(key).fill("#000")
         .attr("class", "label_text")
         .attr("x", newx+text_margin).attr("y", newy)
@@ -302,6 +334,9 @@ function highlight_group(gname) {
         .fill(colors[dlist.indexOf(docid)%colors.length]);
     every_nodes_t[gname][e].attr("visibility", "visible");
   }
+  for (var e in every_edges[gname]) {
+    every_edges[gname][e].attr("visibility", "visible");
+  }
 }
 
 function dim_every_nodes(opct) {
@@ -309,9 +344,9 @@ function dim_every_nodes(opct) {
     for (var e in every_nodes[gname]) {
       every_nodes[gname][e].attr("opacity", opct);
     }
-    for (var e in every_edges[gname]) {
-      every_edges[gname][e].attr("opacity", opct);
-    }
+    // for (var e in every_edges[gname]) {
+    //   every_edges[gname][e].attr("opacity", opct);
+    // }
   }
 }
 
@@ -337,6 +372,9 @@ function reset_highlight() {
       var label = String(elabel[tmp.id]);
       every_nodes_t[gname][e].text(label).attr("visibility", "hidden")
           .attr("x", newx+text_margin).attr("y", newy)
+    }
+    for (var e in every_edges[gname]) {
+      every_edges[gname][e].attr("visibility", "hidden");
     }
   }
 }

@@ -99,13 +99,15 @@ def generate_plots(g1, g2, doc_pd, summary, tsne_p):
         vec[name] = get_vector(name, E, d_entities)
         doc_label[name] = []
         for e, x in zip(E, vec[name]):
-            if (name.split("_")[1] == "summary" and x > 0) or x >= 0.5:
+            # if (name.split("_")[1] == "summary" and x > 0) or x >= 0.3:
+            if x > 0:
                 doc_label[name].append((e, x))
     #     # print(name, vec[name])
     # print(doc_label)
 
     for name, v in doc_label.items():
-        doc_label_str[name] = "\n".join(["{} ({:.2f})".format(e, x) for e, x in sorted(v, key=lambda x: x[1], reverse=True)[:10]])
+        # doc_label_str[name] = "\n".join(["{} ({:.2f})".format(e, x) for e, x in sorted(v, key=lambda x: x[1], reverse=True)[:10]])
+        doc_label_str[name] = [[x[0], round(x[1],2)] for x in sorted(v, key=lambda x: x[1], reverse=True)]
     # print(doc_label_str)
 
     number_of_entities = len(E)

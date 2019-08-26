@@ -73,11 +73,11 @@ function drawCloud( data ) {
   for (var key in data) {
     var name = key.split("_");
     var gname = name[0]+"_"+name[1];
-    var seq = name[2];
     var newx = (data[key][0]-bbox[4])*xs+(width-legend_margin)/2,
         newy = (data[key][1]-bbox[5])*ys+height/2;
-    var label = seq;
+    var label = String(elabel[key]);
     var c_text = draw_text.text(label).id(key).fill("#000")
+        .attr("class", "label_text")
         .attr("x", newx+text_margin).attr("y", newy)
         .attr("stroke", 1)
         .attr("stroke-color", "white")
@@ -151,7 +151,9 @@ function get_papers_in_rect(element){
   var everycircles = $("circle");
   // console.log("everycircles.length", everycircles.length)
   for (var c = 0; c < everycircles.length; c++) {
-    var gname = everycircles[c].getAttribute("id").split("_")[0];
+    var name = everycircles[c].getAttribute("id").split("_");
+    var gname = name[0] + "_" + name[1];
+    // console.log(gname, group_flag[gname])
     if (group_flag[gname]
       && (pl <= everycircles[c].getAttribute("cx") && everycircles[c].getAttribute("cx") <= pr)
       && (pt <= everycircles[c].getAttribute("cy") && everycircles[c].getAttribute("cy") <= pb)) {
@@ -164,11 +166,11 @@ function get_papers_in_rect(element){
 }
 
 function print_selected(data) {
+  // console.log(data)
   $.ajax({
     type: "POST",
     url: "/search",
     data: {
-      "summary": false,
       "nodes": JSON.stringify(data)
     },
     success: function (result) {
@@ -332,8 +334,7 @@ function reset_highlight() {
           .attr("cx", newx).attr("cy", newy)
           .attr("opacity", 1)
           .fill(colors[dlist.indexOf(docid)%colors.length]);
-      var name = tmp.id.split("_");
-      var label = name[2];
+      var label = String(elabel[tmp.id]);
       every_nodes_t[gname][e].text(label).attr("visibility", "hidden")
           .attr("x", newx+text_margin).attr("y", newy)
     }

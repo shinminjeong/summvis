@@ -62,18 +62,20 @@ def reduce_and_save(vec, number_of_entities, name_flag):
 
 def generate_plots(g1, g2, doc_pd, summary, tsne_p):
     name_flag = "{}_{}".format(g1, g2)
-    # print(doc_pd)
+    print(doc_pd)
     # print(summary)
     E = bag_of_entities(doc_pd)
 
+    sentence_map = dict()
     doc_entities = dict()
-    for g, docid, entities, seq in doc_pd[["group", "docid", "entities", "seq"]].values:
+    for g, docid, entities, seq, sen in doc_pd[["group", "docid", "entities", "seq", "sentence"]].values:
         if g in [g1, g2]:
             name = "{}_{}_{}".format(g, docid, seq)
             if name in doc_entities:
                 doc_entities[name].extend(entities)
             else:
                 doc_entities[name] = entities
+            sentence_map[name] = sen
             # print(name, entities)
 
     # summary
@@ -86,17 +88,29 @@ def generate_plots(g1, g2, doc_pd, summary, tsne_p):
                 doc_entities[name].extend(entities)
             else:
                 doc_entities[name] = entities
+            sentence_map[name] = s[1]
             # print(name, entities)
 
 
-    ## generate year_bov for each entity
-    vec = {}
+    doc_label = dict()
+    doc_label_str = dict()
+    vec = dict()
     for name, d_entities in sorted(list(doc_entities.items())):
         vec[name] = get_vector(name, E, d_entities)
-        # print(name, vec[name])
+        doc_label[name] = []
+        for e, x in zip(E, vec[name]):
+            if (name.split("_")[1] == "summary" and x > 0) or x >= 0.5:
+                doc_label[name].append((e, x))
+    #     # print(name, vec[name])
+    # print(doc_label)
+
+    for name, v in doc_label.items():
+        doc_label_str[name] = "\n".join(["{} ({:.2f})".format(e, x) for e, x in sorted(v, key=lambda x: x[1], reverse=True)[:10]])
+    # print(doc_label_str)
+
     number_of_entities = len(E)
     # reduce_and_save(vec, number_of_entities, name_flag)
-    return reduce_vec_tsne(vec, tsne_p, number_of_entities)
+    return reduce_vec_tsne(vec, tsne_p, number_of_entities), doc_label_str, sentence_map
 
 if __name__ == '__main__':
     data = pd.read_hdf("/Users/minjeongshin/Work/summvis/svis/app/data/duc.h5", key = "duc2004")

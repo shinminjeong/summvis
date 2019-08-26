@@ -12,13 +12,17 @@ tspan {
   position: absolute;
 }
 
+.label_text{
+	font-size: 11px;
+}
+
 #verbose_div {
 	height:100%;
 	padding: 10px;
 	vertical-align: top;
 	background-color: #ddd;
 	font-family: 'Inconsolata';
-	font-size: 14px;
+	font-size: 12px;
 	overflow-y: scroll;
 }
 

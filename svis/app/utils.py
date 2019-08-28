@@ -10,10 +10,15 @@ def save_plot_result(filename, dictdata):
     with open("/Users/minjeongshin/Work/summvis/svis/app/data/{}.json".format(filename), "w") as outfile:
         json.dump(dictdata, outfile)
 
-def bag_of_entities(doc_pd):
+def bag_of_entities(g1, g2, doc_pd, summary):
     entities = set()
-    for elist in doc_pd["entities"].values:
-        entities.update(elist)
+    for g, elist in doc_pd[["group","entities"]].values:
+        if g in [g1, g2]:
+            entities.update(elist)
+    for g in [g1, g2]:
+        summ = summary[g[:6].upper()]
+        for idx, s in enumerate(summ):
+            entities.update(s[2])
     print("size of bag_of_entities", len(entities))
     return list(entities)
 
@@ -60,11 +65,11 @@ def reduce_and_save(vec, number_of_entities, name_flag):
     save_plot_result(name_flag, res)
 
 
-def generate_plots(g1, g2, doc_pd, summary, tsne_p):
+def generate_plots(g1, g2, method, doc_pd, summ_gt, summ_bl, summ_mmd, tsne_p):
     name_flag = "{}_{}".format(g1, g2)
     print(doc_pd)
     # print(summary)
-    E = bag_of_entities(doc_pd)
+    E = bag_of_entities(g1, g2, doc_pd, summ_gt)
 
     sentence_map = dict()
     doc_entities = dict()
@@ -76,20 +81,59 @@ def generate_plots(g1, g2, doc_pd, summary, tsne_p):
             else:
                 doc_entities[name] = entities
             sentence_map[name] = sen
-            # print(name, entities)
+            print(name, entities)
 
-    # summary
+    # baselines
+    for summ in [s for s in summ_bl if s["comp"] == "{}_{}".format(g1, g2)]:
+        smethod = summ["method"]
+        s1 = summ["sents"][0]
+        s2 = summ["sents"][1]
+        for gg, ss in [(g1, s1), (g2, s2)]:
+            for seq, s in enumerate(ss):
+                name = "{}_baseline-{}_{}".format(gg, smethod, seq)
+                searched = doc_pd.loc[doc_pd['sentence'] == s]
+                entities = searched["entities"].values[0]
+                if name in doc_entities:
+                    doc_entities[name].extend(entities)
+                else:
+                    doc_entities[name] = entities
+                sentence_map[name] = s
+                print(name, entities)
+
+    params = json.load(open("app/data/gs03-avg-bestparams.json"))
+    # mmd methods
+    for summ in [s for s in summ_mmd if s["comp"] == "{}_{}".format(g1, g2)]:
+        smethod = summ["method"].replace("_", "-")
+        lambdaa = summ["lambdaa"]
+        r = summ["r"]
+        if params[summ["method"]]["lambdaa"] != str(lambdaa) or params[summ["method"]]["r"] != str(r):
+            continue
+        s1 = summ["sents"][0]
+        s2 = summ["sents"][1]
+        for gg, ss in [(g1, s1), (g2, s2)]:
+            for seq, s in enumerate(ss):
+                name = "{}_{}_{}".format(gg, smethod, seq)
+                searched = doc_pd.loc[doc_pd['sentence'] == s]
+                entities = searched["entities"].values[0]
+                if name in doc_entities:
+                    doc_entities[name].extend(entities)
+                else:
+                    doc_entities[name] = entities
+                sentence_map[name] = s
+                print(name, entities)
+
+    # summary ground truth
     for g in [g1, g2]:
-        summ = summary[g[:6].upper()]
+        summ = summ_gt[g[:6].upper()]
         for idx, s in enumerate(summ):
-            name = "{}_summary_{}".format(g, idx)
+            name = "{}_groundtruth_{}".format(g, idx)
             entities = s[2]
             if name in doc_entities:
                 doc_entities[name].extend(entities)
             else:
                 doc_entities[name] = entities
             sentence_map[name] = s[1]
-            # print(name, entities)
+            print(name, entities)
 
 
     doc_label = dict()
@@ -112,7 +156,11 @@ def generate_plots(g1, g2, doc_pd, summary, tsne_p):
 
     number_of_entities = len(E)
     # reduce_and_save(vec, number_of_entities, name_flag)
-    return reduce_vec_tsne(vec, tsne_p, number_of_entities), doc_label_str, sentence_map
+    if method == "tsne":
+        return reduce_vec_tsne(vec, tsne_p, number_of_entities), doc_label_str, sentence_map
+    elif method == "pca":
+        return reduce_vec_pca(vec, number_of_entities), doc_label_str, sentence_map
+
 
 if __name__ == '__main__':
     data = pd.read_hdf("/Users/minjeongshin/Work/summvis/svis/app/data/duc.h5", key = "duc2004")

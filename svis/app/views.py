@@ -26,17 +26,20 @@ def plot(request):
     global input_file_1, input_file_2, label, senmap
     input_file_1 = request.GET.get("input1")
     input_file_2 = request.GET.get("input2")
-    tsne_p = int(request.GET.get("p"))
+    method = request.GET.get("method") if "method" in request.GET else "tsne"
+    tsne_p = int(request.GET.get("p")) if "p" in request.GET else 20
     edge = request.GET.get("edge")
     verbose = request.GET.get("verbose")
     grid_test = request.GET.get("grid_test")
     contour = request.GET.get("contour")
 
-    data = pd.read_hdf("/Users/minjeongshin/Work/summvis/svis/app/data/duc.h5", key = "duc2004")
-    summ = json.load(open("/Users/minjeongshin/Work/summvis/svis/app/data/summ2004.json"))
+    data = pd.read_hdf("app/data/duc.h5", key = "duc2004")
+    summ_gt = json.load(open("app/data/summaries/summ2004.json"))
+    summ_bl = json.load(open("app/data/summaries/run04-baselines-selected.json"))
+    summ_mmd = json.load(open("app/data/summaries/run04-mmd-selected.json"))
     # print(data)
 
-    data, label, senmap = generate_plots(input_file_1, input_file_2, data, summ, tsne_p)
+    data, label, senmap = generate_plots(input_file_1, input_file_2, method, data, summ_gt, summ_bl, summ_mmd, tsne_p)
     # print(label)
     # data = json.loads(open(data_path).read())
 

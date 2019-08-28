@@ -1,5 +1,5 @@
 
-var margin = 5, legend_margin = 200, text_margin = 15;
+var margin = 5, legend_margin = 240, text_margin = 15;
 var draw = SVG('papers').size(width, height);
     // draw.rect(width, height).fill("#fff").dblclick(function() { zoom_out() });
     draw.rect(width, height).fill("transparent").dblclick(function() { zoom_out() });
@@ -12,9 +12,9 @@ var draw_legend = draw.group();
 
 var nsize = 5, nsizeb = 8;
 var bbox = [width,-width,height,-height,0,0]; // (x_min, x_max, y_min, y_max, x_center, y_center)
-var colors = ["#065143", "#4363d8",
+var colors = ["#4363d8", "#ff6bd6", "#065143", 
   "#FCAB10", "#ff9234", "#e6194B",
-  "#0b409c", "#5e227f", "#caabd8", "#ff6bd6", ]
+  "#0b409c", "#5e227f", "#caabd8",  ]
 var glist = [], dlist = [];
 var group_flag = {};
 var every_nodes = {};
@@ -121,11 +121,11 @@ function drawCloud( data ) {
   for (var gid in glist) {
     gname = glist[gid];
     docid = gname.split("_")[0]
-    legend_rect[gname] = draw_legend.rect(20,20).id(gid)
+    legend_rect[gname] = draw_legend.rect(15,15).id(gid)
         .stroke(colors[dlist.indexOf(docid)%colors.length])
-        .fill(colors[dlist.indexOf(docid)%colors.length]).move(width-legend_margin, gid*25+20);
+        .fill(colors[dlist.indexOf(docid)%colors.length]).move(width-legend_margin, gid*20+20);
     legend_text[gname] = draw_legend.text(glist[gid]).id(gid)
-        .move(width-legend_margin+30, gid*25+20)
+        .move(width-legend_margin+30, gid*20+20)
         .fill("#000");
 
     legend_rect[gname].click(function() { toggle_group(this.node.id) });

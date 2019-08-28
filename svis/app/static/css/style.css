@@ -12,6 +12,10 @@ tspan {
   position: absolute;
 }
 
+rect {
+	font-size: 10px;
+}
+
 .label_text{
 	font-size: 11px;
 }
